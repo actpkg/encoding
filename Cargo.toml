@@ -1,0 +1,20 @@
+[package]
+name = "component-encoding"
+description = "Base64 and hex encoding/decoding"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+act-sdk = "0.2"
+wit-bindgen = { version = "0.54", features = ["async-spawn"] }
+base64 = "0.22"
+hex = "0.4"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true
+opt-level = "z"
+
+[lib]
+crate-type = ["cdylib"]
