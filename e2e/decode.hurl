@@ -15,6 +15,6 @@ jsonpath "$.content[0].data" == "hello world"
 # Invalid base64
 POST {{baseurl}}/tools/decode
 {"arguments": {"input": "not-valid-base64!!!"}}
-HTTP 200
+HTTP 422
 [Asserts]
 jsonpath "$.error" exists
