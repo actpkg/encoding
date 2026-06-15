@@ -62,8 +62,22 @@ impl schemars::JsonSchema for TextOrBytes {
         true
     }
     fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        // Same shape as the previous `String` input, so LLM/MCP clients are
-        // unaffected; binary is the advanced `{"$bytes":…}` path.
-        schemars::json_schema!({ "type": "string" })
+        // Either literal UTF-8 text (a plain string) or raw bytes. Binary reaches
+        // this type only as the canonical `{"$bytes":"<base64>"}` object (a bare
+        // string is always text), so that is the second `oneOf` branch.
+        schemars::json_schema!({
+            "oneOf": [
+                { "type": "string", "description": "Literal UTF-8 text to encode." },
+                {
+                    "type": "object",
+                    "description": "Raw bytes to encode, as a base64 byte-string wrapper.",
+                    "properties": {
+                        "$bytes": { "type": "string", "contentEncoding": "base64" }
+                    },
+                    "required": ["$bytes"],
+                    "additionalProperties": false
+                }
+            ]
+        })
     }
 }
