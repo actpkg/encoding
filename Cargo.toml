@@ -1,14 +1,25 @@
 [package]
 name = "component-encoding"
-description = "Base64 and hex encoding/decoding"
-version = "0.2.0"
+description = "Encode/decode: base64(url), base16, base32(hex), base36/58/62, ascii85, url, quoted-printable, html, punycode"
+version = "0.4.0"
 edition = "2024"
 
 [dependencies]
-act-sdk = "0.6"
-wit-bindgen = { version = "0.57", features = ["async-spawn"] }
+act-sdk = "0.8"
+wit-bindgen = { version = "0.58", features = ["async-spawn"] }
 base64 = "0.22"
 hex = "0.4"
+base32 = "0.5"
+bs58 = "0.5"
+urlencoding = "2"
+quoted_printable = "0.5"
+html-escape = "0.2"
+punycode = "0.4"
+serde = { version = "1", features = ["derive"] }
+schemars = "1"
+data-encoding = "2.11.0"
+ascii85 = "0.2.1"
+base-x = "0.2.11"
 
 [profile.release]
 lto = "fat"
