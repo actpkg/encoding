@@ -96,18 +96,16 @@ HTTP 422
 [Asserts]
 jsonpath "$.error" exists
 
-# base64 of non-UTF-8 bytes → application/octet-stream (was a 422 before)
+# base64 of non-UTF-8 bytes → a {"$bytes"} envelope (was a 422 before)
 POST {{baseurl}}/tools/decode
 {"arguments": {"input": "//79"}}
 HTTP 200
 [Asserts]
-jsonpath "$.content[0].mime_type" == "application/octet-stream"
-jsonpath "$.content[0].data" == "//79"
+jsonpath "$.content[0].data['$bytes']" == "//79"
 
-# base64 of valid UTF-8 text → text/plain (data is the string)
+# base64 of valid UTF-8 text → a plain string
 POST {{baseurl}}/tools/decode
 {"arguments": {"input": "aGVsbG8="}}
 HTTP 200
 [Asserts]
-jsonpath "$.content[0].mime_type" == "text/plain"
 jsonpath "$.content[0].data" == "hello"

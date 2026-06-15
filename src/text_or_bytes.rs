@@ -54,6 +54,20 @@ impl<'de> serde::Deserialize<'de> for TextOrBytes {
     }
 }
 
+impl serde::Serialize for TextOrBytes {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        // Content that is valid UTF-8 serializes as a text string; otherwise as a
+        // byte string (the `{"$bytes":…}` envelope on JSON transports).
+        match self {
+            TextOrBytes::Text(s) => serializer.serialize_str(s),
+            TextOrBytes::Bytes(b) => match std::str::from_utf8(b) {
+                Ok(s) => serializer.serialize_str(s),
+                Err(_) => serializer.serialize_bytes(b),
+            },
+        }
+    }
+}
+
 impl schemars::JsonSchema for TextOrBytes {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "TextOrBytes".into()

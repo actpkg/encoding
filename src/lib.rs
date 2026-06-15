@@ -33,11 +33,6 @@ enum Format {
     Punycode,
 }
 
-/// Wrap a decoded string as a `text/plain` content-part.
-fn text_content(s: String) -> Content {
-    Content("text/plain", s.into_bytes())
-}
-
 #[act_component]
 mod component {
     use super::*;
@@ -83,7 +78,7 @@ mod component {
     fn decode(
         #[doc = "Encoded string to decode"] input: String,
         #[doc = "Codec the input is in (default base64)"] format: Option<Format>,
-    ) -> ActResult<Content> {
+    ) -> ActResult<TextOrBytes> {
         use base64::engine::general_purpose as b64;
         let s = input.trim();
         let bytes = match format.unwrap_or(Format::Base64) {
@@ -120,27 +115,25 @@ mod component {
                 quoted_printable::decode(s, quoted_printable::ParseMode::Robust)
                     .map_err(|e| ActError::invalid_args(format!("Invalid quoted-printable: {e}")))?
             }
-            // Text codecs decode straight to a string → always text/plain.
+            // Text codecs decode straight to a string.
             Format::Url => {
                 return urlencoding::decode(s)
-                    .map(|c| text_content(c.into_owned()))
+                    .map(|c| TextOrBytes::Text(c.into_owned()))
                     .map_err(|e| ActError::invalid_args(format!("Invalid url-encoding: {e}")));
             }
             Format::Html => {
-                return Ok(text_content(
+                return Ok(TextOrBytes::Text(
                     html_escape::decode_html_entities(&input).into_owned(),
                 ));
             }
             Format::Punycode => {
                 return punycode::decode(s)
-                    .map(text_content)
+                    .map(TextOrBytes::Text)
                     .map_err(|_| ActError::invalid_args("Invalid punycode"));
             }
         };
-        // Byte codecs: text/plain if the decoded bytes are valid UTF-8, else octet-stream.
-        Ok(match String::from_utf8(bytes) {
-            Ok(text) => Content("text/plain", text.into_bytes()),
-            Err(e) => Content("application/octet-stream", e.into_bytes()),
-        })
+        // Byte codecs: return the decoded bytes; TextOrBytes serializes valid
+        // UTF-8 as a text string and anything else as a {"$bytes"} envelope.
+        Ok(TextOrBytes::Bytes(bytes))
     }
 }
