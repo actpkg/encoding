@@ -4,8 +4,6 @@ use base64::Engine;
 mod text_or_bytes;
 use text_or_bytes::TextOrBytes;
 
-act_sdk::embed_skill!("skill/");
-
 const B32: base32::Alphabet = base32::Alphabet::Rfc4648 { padding: true };
 // base-x big-integer alphabets (arbitrary-byte base36/base62).
 const B36: &str = "0123456789abcdefghijklmnopqrstuvwxyz";
